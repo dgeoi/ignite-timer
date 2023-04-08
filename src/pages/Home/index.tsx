@@ -20,7 +20,12 @@ export function Home() {
             id="taskDescription"
             name="taskDescription"
             placeholder="Name your project"
+            list="task-suggestion"
           />
+
+          <datalist id="task-suggestion">
+            <option value="Meditar" />
+          </datalist>
 
           <label htmlFor="taskDuration">for</label>
           <TaskDurationInput
@@ -28,8 +33,9 @@ export function Home() {
             id="taskDuration"
             name="taskDuration"
             placeholder="00"
-            min={0}
+            min={5}
             max={60}
+            step={5}
           />
 
           <span>minutes.</span>

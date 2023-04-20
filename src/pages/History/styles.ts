@@ -66,3 +66,27 @@ export const HistoryContent = styled.div`
     }
   }
 `
+
+const COLOR_BASED_ON_CURRENT_STATUS = {
+  running: 'yellow-500',
+  completed: 'green-500',
+  interrupted: 'red-500',
+} as const
+
+interface CurrentStatus {
+  currentStatus: keyof typeof COLOR_BASED_ON_CURRENT_STATUS
+}
+
+export const Status = styled.div<CurrentStatus>`
+  display: flex;
+  gap: 0.5rem;
+
+  & > span:first-child {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background-color: ${(props) =>
+      props.theme[COLOR_BASED_ON_CURRENT_STATUS[props.currentStatus]]};
+    transform: translateY(0.375rem);
+  }
+`

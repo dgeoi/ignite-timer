@@ -1,4 +1,7 @@
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Play } from 'phosphor-react'
+import { useForm } from 'react-hook-form'
+import * as zod from 'zod'
 import {
   CountdownButton,
   CountdownContainer,
@@ -9,18 +12,39 @@ import {
   TaskDurationInput,
 } from './styles'
 
+const newCycleFormValidationSchema = zod.object({
+  taskDescription: zod.string().min(1, 'Missing description'),
+  taskDuration: zod.number().min(5).max(60),
+})
+
+type NewCycleFormData = zod.infer<typeof newCycleFormValidationSchema>
+
 export function Home() {
+  const { register, watch, handleSubmit, reset } = useForm<NewCycleFormData>({
+    resolver: zodResolver(newCycleFormValidationSchema),
+    defaultValues: {
+      taskDescription: '',
+      taskDuration: 5,
+    },
+  })
+  const taskInput = watch('taskDescription')
+  const isTaskInputEmpty = !taskInput
+
+  function handleCreateNewCycle(data: NewCycleFormData) {
+    reset()
+  }
+
   return (
     <HomeContainer>
-      <form>
+      <form onSubmit={handleSubmit(handleCreateNewCycle)}>
         <FormContainer>
           <label htmlFor="taskDescription">{`I'll work on`}</label>
           <TaskDescriptionInput
             type="text"
             id="taskDescription"
-            name="taskDescription"
             placeholder="Name your project"
             list="task-suggestion"
+            {...register('taskDescription')}
           />
 
           <datalist id="task-suggestion">
@@ -31,11 +55,11 @@ export function Home() {
           <TaskDurationInput
             type="number"
             id="taskDuration"
-            name="taskDuration"
             placeholder="00"
             min={5}
             max={60}
             step={5}
+            {...register('taskDuration', { valueAsNumber: true })}
           />
 
           <span>minutes.</span>
@@ -49,7 +73,7 @@ export function Home() {
           <span>0</span>
         </CountdownContainer>
 
-        <CountdownButton type="submit" disabled>
+        <CountdownButton type="submit" disabled={isTaskInputEmpty}>
           <Play size={24} weight="fill" />
           Start
         </CountdownButton>

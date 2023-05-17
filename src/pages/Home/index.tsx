@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { differenceInSeconds } from 'date-fns'
 import { Play } from 'phosphor-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as zod from 'zod'
 import {
@@ -24,12 +25,25 @@ interface Cycle {
   id: string
   taskDescription: string
   taskDuration: number
+  startDate: Date
 }
 
 export function Home() {
   const [cycles, setCycles] = useState<Cycle[]>([])
+  const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
   const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
+  const activeCycleDurationInSeconds = activeCycle
+    ? activeCycle.taskDuration * 60
+    : 0
+  const currentCycleTime = activeCycle
+    ? activeCycleDurationInSeconds - amountSecondsPassed
+    : 0
+  const currentMinutes = Math.floor(currentCycleTime / 60)
+  const minutes = String(currentMinutes).padStart(2, '0')
+  const currentSeconds = currentCycleTime % 60
+  const seconds = String(currentSeconds).padStart(2, '0')
+
   const { register, watch, handleSubmit, reset } = useForm<NewCycleFormData>({
     resolver: zodResolver(newCycleFormValidationSchema),
     defaultValues: {
@@ -40,6 +54,16 @@ export function Home() {
   const taskInput = watch('taskDescription')
   const isTaskInputEmpty = !taskInput
 
+  useEffect(() => {
+    if (activeCycle) {
+      setInterval(() => {
+        setAmountSecondsPassed(
+          differenceInSeconds(new Date(), activeCycle.startDate),
+        )
+      }, 1000)
+    }
+  }, [activeCycle])
+
   function handleCreateNewCycle({
     taskDescription,
     taskDuration,
@@ -49,6 +73,7 @@ export function Home() {
       id,
       taskDescription,
       taskDuration,
+      startDate: new Date(),
     }
 
     setCycles((previous) => previous.concat(newCycle))
@@ -89,11 +114,11 @@ export function Home() {
         </FormContainer>
 
         <CountdownContainer>
-          <span>0</span>
-          <span>0</span>
+          <span>{minutes[0]}</span>
+          <span>{minutes[1]}</span>
           <CountdownSeparator>{':'}</CountdownSeparator>
-          <span>0</span>
-          <span>0</span>
+          <span>{seconds[0]}</span>
+          <span>{seconds[1]}</span>
         </CountdownContainer>
 
         <CountdownButton type="submit" disabled={isTaskInputEmpty}>

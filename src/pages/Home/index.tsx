@@ -1,15 +1,16 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { differenceInSeconds } from 'date-fns'
-import { Play } from 'phosphor-react'
+import { Pause, Play } from 'phosphor-react'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as zod from 'zod'
 import {
-  CountdownButton,
   CountdownContainer,
   CountdownSeparator,
   FormContainer,
   HomeContainer,
+  StartCountdownButton,
+  StopCountdownButton,
   TaskDescriptionInput,
   TaskDurationInput,
 } from './styles'
@@ -26,6 +27,7 @@ interface Cycle {
   taskDescription: string
   taskDuration: number
   startDate: Date
+  interruptedDate?: Date
 }
 
 export function Home() {
@@ -55,14 +57,26 @@ export function Home() {
   const isTaskInputEmpty = !taskInput
 
   useEffect(() => {
+    let interval: number
+
     if (activeCycle) {
-      setInterval(() => {
+      interval = setInterval(() => {
         setAmountSecondsPassed(
           differenceInSeconds(new Date(), activeCycle.startDate),
         )
       }, 1000)
     }
+
+    return () => {
+      clearInterval(interval)
+    }
   }, [activeCycle])
+
+  useEffect(() => {
+    minutes && seconds !== '00'
+      ? (document.title = `${minutes}:${seconds} | ${activeCycle?.taskDescription}`)
+      : (document.title = 'Ignite Timer')
+  }, [minutes, seconds, activeCycle])
 
   function handleCreateNewCycle({
     taskDescription,
@@ -78,9 +92,24 @@ export function Home() {
 
     setCycles((previous) => previous.concat(newCycle))
     setActiveCycleId(id)
+    setAmountSecondsPassed(0)
 
     reset()
   }
+
+  function handleStopCycle() {
+    setCycles(
+      cycles.map((cycle) => {
+        if (cycle.id === activeCycleId) {
+          return { ...cycle, interruptedDate: new Date() }
+        }
+        return cycle
+      }),
+    )
+    setActiveCycleId(null)
+  }
+
+  console.log(cycles)
 
   return (
     <HomeContainer>
@@ -93,6 +122,7 @@ export function Home() {
             placeholder="Name your project"
             list="task-suggestion"
             {...register('taskDescription')}
+            disabled={!!activeCycle}
           />
 
           <datalist id="task-suggestion">
@@ -108,6 +138,7 @@ export function Home() {
             max={60}
             step={5}
             {...register('taskDuration', { valueAsNumber: true })}
+            disabled={!!activeCycle}
           />
 
           <span>minutes.</span>
@@ -121,10 +152,17 @@ export function Home() {
           <span>{seconds[1]}</span>
         </CountdownContainer>
 
-        <CountdownButton type="submit" disabled={isTaskInputEmpty}>
-          <Play size={24} weight="fill" />
-          Start
-        </CountdownButton>
+        {activeCycle ? (
+          <StopCountdownButton onClick={handleStopCycle} type="button">
+            <Pause size={24} />
+            Stop
+          </StopCountdownButton>
+        ) : (
+          <StartCountdownButton type="submit" disabled={isTaskInputEmpty}>
+            <Play size={24} weight="fill" />
+            Start
+          </StartCountdownButton>
+        )}
       </form>
     </HomeContainer>
   )

@@ -28,6 +28,7 @@ interface Cycle {
   taskDuration: number
   startDate: Date
   interruptedDate?: Date
+  finishedDate?: Date
 }
 
 export function Home() {
@@ -61,16 +62,36 @@ export function Home() {
 
     if (activeCycle) {
       interval = setInterval(() => {
-        setAmountSecondsPassed(
-          differenceInSeconds(new Date(), activeCycle.startDate),
-        )
+        const differenceInSecondsBetweenCurrentDateAndCycleStartDate =
+          differenceInSeconds(new Date(), activeCycle.startDate)
+
+        if (
+          differenceInSecondsBetweenCurrentDateAndCycleStartDate >=
+          activeCycleDurationInSeconds
+        ) {
+          setCycles((previous) =>
+            previous.map((cycle) => {
+              if (cycle.id === activeCycleId) {
+                return { ...cycle, finishedDate: new Date() }
+              }
+              return cycle
+            }),
+          )
+          setAmountSecondsPassed(activeCycleDurationInSeconds)
+          clearInterval(interval)
+          setActiveCycleId(null)
+        } else {
+          setAmountSecondsPassed(
+            differenceInSecondsBetweenCurrentDateAndCycleStartDate,
+          )
+        }
       }, 1000)
     }
 
     return () => {
       clearInterval(interval)
     }
-  }, [activeCycle])
+  }, [activeCycle, activeCycleDurationInSeconds, activeCycleId])
 
   useEffect(() => {
     minutes && seconds !== '00'
@@ -98,8 +119,8 @@ export function Home() {
   }
 
   function handleStopCycle() {
-    setCycles(
-      cycles.map((cycle) => {
+    setCycles((previous) =>
+      previous.map((cycle) => {
         if (cycle.id === activeCycleId) {
           return { ...cycle, interruptedDate: new Date() }
         }
@@ -108,8 +129,6 @@ export function Home() {
     )
     setActiveCycleId(null)
   }
-
-  console.log(cycles)
 
   return (
     <HomeContainer>

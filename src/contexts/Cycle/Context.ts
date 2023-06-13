@@ -1,5 +1,4 @@
 import { createContext, Dispatch, SetStateAction } from 'react'
-import { newCycleFormData } from '../../pages/Home'
 
 export interface Cycle {
   id: string
@@ -10,11 +9,17 @@ export interface Cycle {
   finishedDate?: Date
 }
 
+export interface CreateCycleData {
+  taskDescription: string
+  taskDuration: number
+}
+
 interface CycleContextType {
+  cycles: Cycle[]
   activeCycle: Cycle | undefined
   activeCycleId: string | null
   amountSecondsPassed: number
-  createNewCycle: ({ taskDescription, taskDuration }: newCycleFormData) => void
+  createNewCycle: ({ taskDescription, taskDuration }: CreateCycleData) => void
   setAmountSecondsPassed: Dispatch<SetStateAction<number>>
   setCurrentCycleAsFinished: () => void
   setCurrentCycleAsInterrupted: () => void

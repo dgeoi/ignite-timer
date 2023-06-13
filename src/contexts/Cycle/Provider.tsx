@@ -1,14 +1,17 @@
 import { ReactNode, useState } from 'react'
-import { newCycleFormData } from '../../pages/Home'
-import { Cycle, CycleContext } from './Context'
+import { CreateCycleData, Cycle, CycleContext } from './Context'
 
-export const CycleProvider = (props: { children: ReactNode }) => {
+interface CycleProviderProps {
+  children: ReactNode
+}
+
+export const CycleProvider = ({ children }: CycleProviderProps) => {
   const [cycles, setCycles] = useState<Cycle[]>([])
   const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
   const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
 
-  function createNewCycle({ taskDescription, taskDuration }: newCycleFormData) {
+  function createNewCycle({ taskDescription, taskDuration }: CreateCycleData) {
     const id = String(new Date().getTime())
     const newCycle: Cycle = {
       id,
@@ -49,6 +52,7 @@ export const CycleProvider = (props: { children: ReactNode }) => {
   return (
     <CycleContext.Provider
       value={{
+        cycles,
         activeCycle,
         activeCycleId,
         amountSecondsPassed,
@@ -58,7 +62,7 @@ export const CycleProvider = (props: { children: ReactNode }) => {
         setCurrentCycleAsInterrupted,
       }}
     >
-      {props.children}
+      {children}
     </CycleContext.Provider>
   )
 }

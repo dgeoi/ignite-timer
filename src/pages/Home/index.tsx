@@ -2,7 +2,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Pause, Play } from 'phosphor-react'
 import { FormProvider, useForm } from 'react-hook-form'
 import * as zod from 'zod'
-import { CycleProvider } from '../../contexts/Cycle/Provider'
 import { useCycle } from '../../contexts/hooks/useCycle'
 import { Countdown } from './components/Countdown'
 import { NewCycleForm } from './components/NewCycleForm'
@@ -17,9 +16,9 @@ const newCycleFormValidationSchema = zod.object({
   taskDuration: zod.number().min(5).max(60),
 })
 
-export type newCycleFormData = zod.infer<typeof newCycleFormValidationSchema>
+type newCycleFormData = zod.infer<typeof newCycleFormValidationSchema>
 
-function HomeComponent() {
+export function Home() {
   const { activeCycle, createNewCycle, setCurrentCycleAsInterrupted } =
     useCycle()
   const newCycleForm = useForm<newCycleFormData>({
@@ -65,13 +64,5 @@ function HomeComponent() {
         </form>
       </FormProvider>
     </HomeContainer>
-  )
-}
-
-export function Home() {
-  return (
-    <CycleProvider>
-      <HomeComponent />
-    </CycleProvider>
   )
 }

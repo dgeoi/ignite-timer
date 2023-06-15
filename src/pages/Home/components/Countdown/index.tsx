@@ -27,7 +27,7 @@ export function Countdown() {
     if (activeCycle) {
       interval = setInterval(() => {
         const differenceInSecondsBetweenCurrentDateAndCycleStartDate =
-          differenceInSeconds(new Date(), activeCycle.startDate)
+          differenceInSeconds(new Date(), new Date(activeCycle.startDate))
 
         if (
           differenceInSecondsBetweenCurrentDateAndCycleStartDate >=

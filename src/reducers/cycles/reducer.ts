@@ -1,3 +1,4 @@
+import { produce } from 'immer'
 import { Cycle } from '../../contexts/Cycle/Context'
 import { CyclesReducerActionType } from './actions'
 
@@ -9,34 +10,38 @@ interface CyclesReducerState {
 export function cyclesReducer(state: CyclesReducerState, action: any) {
   switch (action.type) {
     case CyclesReducerActionType.Create:
-      return {
-        ...state,
-        cycles: [...state.cycles, action.payload.newCycle],
-        activeCycleId: action.payload.newCycle.id,
+      return produce(state, (draft) => {
+        draft.cycles.push(action.payload.newCycle)
+        draft.activeCycleId = action.payload.newCycle.id
+      })
+    case CyclesReducerActionType.Interrupt: {
+      const currentCycleIndex = state.cycles.findIndex((cycle) => {
+        return cycle.id === state.activeCycleId
+      })
+
+      if (currentCycleIndex < 0) {
+        return state
       }
 
-    case CyclesReducerActionType.Interrupt:
-      return {
-        cycles: state.cycles.map((cycle) => {
-          if (cycle.id === state.activeCycleId) {
-            return { ...cycle, interruptedDate: new Date() }
-          }
-          return cycle
-        }),
-        activeCycleId: null,
+      return produce(state, (draft) => {
+        draft.activeCycleId = null
+        draft.cycles[currentCycleIndex].interruptedDate = new Date()
+      })
+    }
+    case CyclesReducerActionType.Finish: {
+      const currentCycleIndex = state.cycles.findIndex((cycle) => {
+        return cycle.id === state.activeCycleId
+      })
+
+      if (currentCycleIndex < 0) {
+        return state
       }
 
-    case CyclesReducerActionType.Finish:
-      return {
-        cycles: state.cycles.map((cycle) => {
-          if (cycle.id === state.activeCycleId) {
-            return { ...cycle, finishedDate: new Date() }
-          }
-          return cycle
-        }),
-        activeCycleId: null,
-      }
-
+      return produce(state, (draft) => {
+        draft.activeCycleId = null
+        draft.cycles[currentCycleIndex].finishedDate = new Date()
+      })
+    }
     default:
       return state
   }

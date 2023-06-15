@@ -1,4 +1,5 @@
-import { ReactNode, useState } from 'react'
+import { ReactNode, useReducer, useState } from 'react'
+import { CyclesReducerActionType, cyclesReducer } from '../../reducers/cycles'
 import { CreateCycleData, Cycle, CycleContext } from './Context'
 
 interface CycleProviderProps {
@@ -6,9 +7,12 @@ interface CycleProviderProps {
 }
 
 export const CycleProvider = ({ children }: CycleProviderProps) => {
-  const [cycles, setCycles] = useState<Cycle[]>([])
+  const [cyclesState, dispatch] = useReducer(cyclesReducer, {
+    cycles: [],
+    activeCycleId: null,
+  })
+  const { cycles, activeCycleId } = cyclesState
   const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
-  const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
 
   function createNewCycle({ taskDescription, taskDuration }: CreateCycleData) {
@@ -19,34 +23,25 @@ export const CycleProvider = ({ children }: CycleProviderProps) => {
       taskDuration,
       startDate: new Date(),
     }
-
-    setCycles((previous) => previous.concat(newCycle))
-    setActiveCycleId(id)
+    dispatch({
+      type: CyclesReducerActionType.Create,
+      payload: {
+        newCycle,
+      },
+    })
     setAmountSecondsPassed(0)
   }
 
   function setCurrentCycleAsInterrupted() {
-    setCycles((previous) =>
-      previous.map((cycle) => {
-        if (cycle.id === activeCycleId) {
-          return { ...cycle, interruptedDate: new Date() }
-        }
-        return cycle
-      }),
-    )
-    setActiveCycleId(null)
+    dispatch({
+      type: CyclesReducerActionType.Interrupt,
+    })
   }
 
   function setCurrentCycleAsFinished() {
-    setCycles((previous) =>
-      previous.map((cycle) => {
-        if (cycle.id === activeCycleId) {
-          return { ...cycle, finishedDate: new Date() }
-        }
-        return cycle
-      }),
-    )
-    setActiveCycleId(null)
+    dispatch({
+      type: CyclesReducerActionType.Finish,
+    })
   }
 
   return (

@@ -1,23 +1,10 @@
-import { Cycle } from '../contexts/Cycle/Context'
+import { Cycle } from '../../contexts/Cycle/Context'
+import { CyclesReducerActionType } from './actions'
 
 interface CyclesReducerState {
   cycles: Cycle[]
   activeCycleId: string | null
 }
-
-export enum CyclesReducerActionType {
-  Create = 'ADD_NEW_CYCLE',
-  Interrupt = 'INTERRUPT_CURRENT_CYCLE',
-  Finish = 'FINISH_CURRENT_CYCLE',
-}
-
-// interface CyclesReducerAction {
-//   type: string
-//   payload?: {
-//     newCycle?: Cycle
-//     activeCycleId?: string
-//   }
-// }
 
 export function cyclesReducer(state: CyclesReducerState, action: any) {
   switch (action.type) {
